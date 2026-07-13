@@ -8,8 +8,8 @@ A117: Ring Hash Exit Idle Behavior Changes
 
 ## Abstract
 
-Update the Ring Hash LB policy to create connections when expliictly requested
-by the channel to do so, instead of ignoring the request.
+Update the Ring Hash LB policy to create connections when explictly requested by
+the channel to do so, instead of ignoring the request.
 
 ## Background
 
@@ -19,11 +19,12 @@ of gRPC also ignored calls to the "exit idle" / "request connection" method.
 
 It has been observed that this behavior can cause problems, however.
 Specifically, when using the gRPC [connectivity API][], if an application
-requests a channel using ring-hash to connect, but ring hash ignores the
+requests a channel using ring hash to connect, but ring hash ignores the
 incoming request from the channel, the application will never see a change to
-the state of the channel.  If the connectivity state is used for something like
-computing the health of a server, that can cause serious problems, as an
-unhealthy server will not receive the traffic it needs to begin connecting.
+the state of the channel.  Further, if this channel's connectivity state is used
+to compute the health of a server using that channel, that can cause serious
+problems, as an unhealthy server will not receive the traffic it needs to make
+ring hash connect.
 
 ### Related Proposals:
 
