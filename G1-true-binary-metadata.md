@@ -38,10 +38,14 @@ within the experimental range of HTTP extensions (see https://tools.ietf.org/htm
 
 The setting can have the values 0 (default) or 1. If the setting is 1, then
 peers MAY use a 'true binary' encoding (described below), instead of the current
-base64 encoding for -bin metadata.
+base64 encoding for -bin metadata. Other values MUST be treated as 0 (and not
+as a connection error), since other extensions might alias this setting id.
 
 Implementations SHOULD transmit this setting only once, and as part of the first
 settings frame.
+
+This is an HTTP2 setting only. On other transports (such as HTTP3), binary
+metadata is always base64 encoded.
 
 ### 'True binary' encoding
 
@@ -50,12 +54,15 @@ GRPC_ALLOW_TRUE_BINARY_METADATA, instead of encoding using base64, an
 implementation MAY instead prefix a NUL byte to the metadata and transmit the
 metadata value in binary form.
 
+Since binary values may contain ',', multiple true binary values for the same
+key MUST NOT be joined with ','. Each value MUST be sent as a separate header.
+
 Since this is a HTTP2 extension and other extensions might alias this extension
 id, it's possible that this becomes misconfigured. In that case, peers are
 required to RST_STREAM with http error PROTOCOL_ERROR (as required by https://tools.ietf.org/html/rfc7540#section-10.3). 
-If a binary encoding was attempted and such a RST_STREAM is received without any other headers,
-implementations SHOULD retry the request with base64 encoding, and disable
-binary encoding for future requests. Verbosely logging this condition is
+If a client attempted a binary encoding and such a RST_STREAM is received without any other headers,
+the client SHOULD retry the request with base64 encoding, and disable
+binary encoding for future requests on that connection. Verbosely logging this condition is
 encouraged.
 
 ### Examples
